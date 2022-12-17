@@ -244,8 +244,9 @@ int main(){
                                  {9,9,0,9,9,0,9,9,0,9,9,9,9,9,9},
                                  {9,9,0,0,0,0,9,0,0,0,0,0,0,3,9},
                                  {9,9,9,9,9,9,9,9,9,9,9,9,9,9,9}};
-                
-    //grid = random_question(77);
+    
+    int maze_size = 13;
+    grid = random_question(maze_size);
     print(grid);
     
     ofstream ofs("test.csv");
@@ -255,7 +256,7 @@ int main(){
         }
         ofs << endl;
     }
-    Q_Learning_Platform(EPISODE_MAX , grid , 77); //epsode , data , size
+    Q_Learning_Platform(EPISODE_MAX , grid , maze_size); //epsode , data , size
     
     return 0;
 }

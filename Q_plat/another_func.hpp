@@ -22,7 +22,7 @@
 
 
 #define EPISODE_MAX 1 // 何回ゴールするか
-#define STEP_MAX 1000 // ゴールまでの打ち切りステップ数
+#define STEP_MAX 10 // ゴールまでの打ち切りステップ数
 #define ALPHA 0.3 // 学習率 0~1
 #define GAMMA 0.7 // 割引率
 #define EPSILON 0.7
