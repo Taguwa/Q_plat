@@ -21,8 +21,8 @@
 #include <regex>
 
 
-#define EPISODE_MAX 1 // 何回ゴールするか
-#define STEP_MAX 10 // ゴールまでの打ち切りステップ数
+#define EPISODE_MAX 10 // 何回ゴールするか
+#define STEP_MAX 500 // ゴールまでの打ち切りステップ数
 #define ALPHA 0.3 // 学習率 0~1
 #define GAMMA 0.7 // 割引率
 #define EPSILON 0.7
@@ -38,10 +38,10 @@ struct row{
 
 //q_table
 struct q{
-    int u;
-    int d;
-    int l;
-    int r;
+    double u;
+    double d;
+    double l;
+    double r;
 };
 //
 //表示

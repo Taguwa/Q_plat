@@ -6,6 +6,7 @@
 #include <string.h>
 #include <string>
 #include <iomanip>
+#include <stdlib.h>
 #include <vector>
 #include <fstream>
 #include <algorithm>
@@ -77,11 +78,19 @@ row select_best_action(vector<vector<int>> maze, vector<vector<q>> Q_table, row 
     return best_action;
 }
 
+
+
 //行動決定関数 ... 一定の確率で、ベストでない動きをする
 row select_action(vector<vector<int>> maze, vector<vector<q>> Q_table, row pos){
+   
+    //
+    //  まず行動をε-greedyを使って確定
+    //  ・best -> 現段階の最適解
+    //  ・agent_action -> ε-greedyを用いて決まった行動
+    //
     
-    //ε-greedyをここで使う
     row best = select_best_action(maze,Q_table,pos);
+    row agent_action = best;
     
     //いけるマスを探すflag
     int flag_up = 0;
@@ -90,32 +99,16 @@ row select_action(vector<vector<int>> maze, vector<vector<q>> Q_table, row pos){
     int flag_right = 0;
     
     //いけるところのflagを立てる（0 or 1 or 3でflag = 1に）
-    if(maze[pos.y][pos.x + 1] == 0 || maze[pos.y][pos.x + 1] == 1 || maze[pos.y][pos.x + 1] == 3){
-        flag_right = 1;
-    }
-    if(maze[pos.y + 1][pos.x] == 0 || maze[pos.y + 1][pos.x] == 1 || maze[pos.y][pos.x] == 3){
-        flag_down = 1;
-    }
-    if(maze[pos.y - 1][pos.x] == 0 || maze[pos.y - 1][pos.x] == 1 || maze[pos.y][pos.x + 1] == 3){
-        flag_up = 1;
-    }
-    if(maze[pos.y][pos.x - 1] == 0 || maze[pos.y][pos.x - 1] == 1 || maze[pos.y][pos.x + 1] == 3){;
-        flag_left = 1;
-    }
+    if(maze[pos.y][pos.x + 1] == 0 || maze[pos.y][pos.x + 1] == 1 || maze[pos.y][pos.x + 1] == 3) flag_right = 1;
+    if(maze[pos.y + 1][pos.x] == 0 || maze[pos.y + 1][pos.x] == 1 || maze[pos.y][pos.x] == 3) flag_down = 1;
+    if(maze[pos.y - 1][pos.x] == 0 || maze[pos.y - 1][pos.x] == 1 || maze[pos.y][pos.x + 1] == 3) flag_up = 1;
+    if(maze[pos.y][pos.x - 1] == 0 || maze[pos.y][pos.x - 1] == 1 || maze[pos.y][pos.x + 1] == 3) flag_left = 1;
     
-    //cout << "flag : " <<flag_up<<flag_down<<flag_right<<flag_left<<endl;
-    //
-    //ε-greedy
-    //
-    
+    //* : normal action or ! : irregular action を選択
     std::random_device seed_gen;
     std::mt19937 engine(seed_gen());
     double seed = seed_gen() % 10;
     double epsilon = EPSILON;
-    epsilon = 0.7;
-    
-    //epsilonの確率でbestactionをそのまま使う
-    row agent_action = best;
     if(seed <= epsilon * 10){
         agent_action = best;
         cout << "* : normal action : x." <<  agent_action.x << ", y." << agent_action.y << endl;
@@ -134,55 +127,42 @@ row select_action(vector<vector<int>> maze, vector<vector<q>> Q_table, row pos){
         }else{
             agent_action = best;
         }
-        
         cout << "! : irregular action " << math_flag << " : x." <<  agent_action.x << ", y." << agent_action.y << endl;
     }
     
     //
-    //Q table更新
+    //  Q table更新
     //
     
-    //wallに行く報酬
-    if(flag_up == 0) Q_table[pos.y][pos.x].u = -100;
-    if(flag_down == 0) Q_table[pos.y][pos.x].d = -100;
-    if(flag_left == 0) Q_table[pos.y][pos.x].l = -100;
-    if(flag_right == 0) Q_table[pos.y][pos.x].r = -100;
-  
-    //行動に対する報酬
-    row goal = {13,13};
-    if(!(agent_action.x == goal.x && agent_action.y == goal.y)){
-        //ゴール以外の手の報酬
-        //上に移動している
-        if(agent_action.x == pos.x && agent_action.y < pos.y ){
-            Q_table[pos.y][pos.x].u += 10;
-            
-        }
-        //左に移動している
-        else if(agent_action.x > pos.x && agent_action.y == pos.y ){
-            Q_table[pos.y][pos.x].l += 10;
-        }
-        //右に移動している
-        else if(agent_action.x < pos.x && agent_action.y == pos.y ){
-            Q_table[pos.y][pos.x].r += 10;
-        }
-        //下に移動している
-        else if(agent_action.x == pos.x && agent_action.y > pos.y ){
-            Q_table[pos.y][pos.x].d += 10;
-        }
-    }else{
-        //ゴールの報酬
-        if(agent_action.x == pos.x && agent_action.y < pos.y ) Q_table[pos.y][pos.x].u += 100;
-        else if(agent_action.x > pos.x && agent_action.y == pos.y ) Q_table[pos.y][pos.x].l += 100;
-        else if(agent_action.x < pos.x && agent_action.y == pos.y ) Q_table[pos.y][pos.x].r += 100;
-        else if(agent_action.x == pos.x && agent_action.y > pos.y ) Q_table[pos.y][pos.x].d += 100;
-    }
-   
+    //どこに行ってるのか調べる（方向）
+    string where_agent_going = "";
+    if(agent_action.x == pos.x && agent_action.y < pos.y ){   where_agent_going = "u"; }
+    else if(agent_action.x > pos.x && agent_action.y == pos.y ){   where_agent_going = "l";}
+    else if(agent_action.x < pos.x && agent_action.y == pos.y ){  where_agent_going = "r";}
+    else if(agent_action.x == pos.x && agent_action.y > pos.y ){  where_agent_going = "d";}
+    
+    //今ステップの報酬とゴールを定義
+    double step_value = 0;
+    int gol = int(maze[0].size());
+    row goal = {gol,gol};
+    
+    //行動に対する報酬を使って更新
+    if(agent_action.x == goal.x && agent_action.y == goal.y){ step_value = 100; } //goal
+    else { step_value = 10;} //not goal
+
+    //update table
+    if(where_agent_going == "u") Q_table[pos.y][pos.x].u = (ALPHA * step_value) + Q_table[pos.y][pos.x].u;
+    if(where_agent_going == "l") Q_table[pos.y][pos.x].l = (ALPHA * step_value) + Q_table[pos.y][pos.x].l;
+    if(where_agent_going == "r") Q_table[pos.y][pos.x].r = (ALPHA * step_value) + Q_table[pos.y][pos.x].r;
+    if(where_agent_going == "d") Q_table[pos.y][pos.x].d = (ALPHA * step_value) + Q_table[pos.y][pos.x].d;
+    
     //return
     return agent_action;
 }
 
 //epsodeを実行する
 void Q_Learning_Platform(int epsode , vector<vector<int>> board , int size){
+  
     //Qtable
     vector<vector<q>> Q_table(size , vector<q>(size , {0,0,0,0}));
     
@@ -196,7 +176,7 @@ void Q_Learning_Platform(int epsode , vector<vector<int>> board , int size){
         
         //1epsode ゴールするまで or MAX_STEP
         while(step <= STEP_MAX){
-            
+            cout << step <<endl;
             //agentがゴールにいたらepsode終了
             if(board[agent.x][agent.y] == 3){
                 cout << "" << endl;
@@ -214,7 +194,6 @@ void Q_Learning_Platform(int epsode , vector<vector<int>> board , int size){
         maze = board;
         step = 0;
     }
-    
     cout << "Finish : Result >> q_table.csv" << endl;
 }
 
@@ -245,8 +224,8 @@ int main(){
                                  {9,9,0,0,0,0,9,0,0,0,0,0,0,3,9},
                                  {9,9,9,9,9,9,9,9,9,9,9,9,9,9,9}};
     
-    int maze_size = 13;
-    grid = random_question(maze_size);
+    int maze_size = 101;
+    //grid = random_question(maze_size);
     print(grid);
     
     ofstream ofs("test.csv");
@@ -256,10 +235,7 @@ int main(){
         }
         ofs << endl;
     }
-    Q_Learning_Platform(EPISODE_MAX , grid , maze_size); //epsode , data , size
     
+    Q_Learning_Platform(EPISODE_MAX , grid , maze_size); //epsode , data , size
     return 0;
 }
-
-//error & to do
-//ε-greedyを実装 <- まだ
