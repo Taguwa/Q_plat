@@ -24,34 +24,32 @@ using namespace std;
 
 //四方向のQテーブルから、最良一番いいのを出す
 row select_best_action(vector<vector<int>> maze, vector<vector<q>> Q_table, row pos){
-    
-    //
-    //いけるところのflagを立てる（0 or 1 でflag = 1に）
-    //
+    //いけるマスを探すflag
     int flag_up = 0;
     int flag_down = 0;
     int flag_left = 0;
     int flag_right = 0;
     
-    if(maze[pos.y][pos.x + 1] == 0 || maze[pos.y][pos.x + 1] == 1 || maze[pos.y][pos.x + 1] == 3){
-        flag_right = 1;
-    }
-    if(maze[pos.y + 1][pos.x] == 0 || maze[pos.y + 1][pos.x] == 1 || maze[pos.y][pos.x] == 3){
-        flag_down = 1;
-    }
-    if(maze[pos.y - 1][pos.x] == 0 || maze[pos.y - 1][pos.x] == 1 || maze[pos.y][pos.x + 1] == 3){
-        flag_up = 1;
-    }
-    if(maze[pos.y][pos.x - 1] == 0 || maze[pos.y][pos.x - 1] == 1 || maze[pos.y][pos.x + 1] == 3){;
-        flag_left = 1;
+    //いけるところのflagを立てる（0 or 1 or 3でflag = 1に）
+    if(maze[pos.y][pos.x + 1] == 0 || maze[pos.y][pos.x + 1] == 3) flag_right = 1;
+    if(maze[pos.y + 1][pos.x] == 0 || maze[pos.y][pos.x] == 3) flag_down = 1;
+    if(maze[pos.y - 1][pos.x] == 0 || maze[pos.y][pos.x + 1] == 3) flag_up = 1;
+    if(maze[pos.y][pos.x - 1] == 0 || maze[pos.y][pos.x + 1] == 3) flag_left = 1;
+    
+    if(flag_up + flag_down + flag_left + flag_right == 0){
+        if(maze[pos.y][pos.x + 1] == 1 ) flag_right = 1;
+        if(maze[pos.y + 1][pos.x] == 1 ) flag_down = 1;
+        if(maze[pos.y - 1][pos.x] == 1 ) flag_up = 1;
+        if(maze[pos.y][pos.x - 1] == 1 ) flag_left = 1;
     }
     
     //
     //一番いい評価を持つマスをbest_actionとし、qtableを更新
     //
+    
     int max_eva = 0;//最大評価値を保存
-    string pos_flag = " ";//行く方向
-    /*
+    string pos_flag = "";//行く方向
+
     if( !((Q_table[pos.y][pos.x].u == Q_table[pos.y][pos.x].d) &&
           (Q_table[pos.y][pos.x].r == Q_table[pos.y][pos.x].l) &&
           (Q_table[pos.y][pos.x].u == Q_table[pos.y][pos.x].r))    ){
@@ -60,21 +58,21 @@ row select_best_action(vector<vector<int>> maze, vector<vector<q>> Q_table, row 
         if(flag_right == 1 && Q_table[pos.y][pos.x].r >= max_eva){max_eva = Q_table[pos.y][pos.x].r; pos_flag = "right";}
         if(flag_down == 1 && Q_table[pos.y][pos.x].d >= max_eva){max_eva = Q_table[pos.y][pos.x].d; pos_flag = "down";}
     }else{
-     */
         // D → R → L → U
         if(flag_up == 1){ pos_flag = "up";}
         if(flag_left == 1 ){ pos_flag = "left";}
         if(flag_right == 1 ){ pos_flag = "right";}
         if(flag_down == 1){ pos_flag = "down";}
-    //}
+    }
     
-    //best actionに代入して、返す
+    //best_actionに代入して、返す
     row best_action;
     if(pos_flag == "up"){ best_action = {pos.x,pos.y-1};}
     else if(pos_flag == "left"){ best_action = {pos.x-1,pos.y};}
     else if(pos_flag == "right"){ best_action = {pos.x+1,pos.y};}
     else if(pos_flag == "down"){ best_action = {pos.x,pos.y+1};}
     
+    //return
     return best_action;
 }
 
@@ -89,6 +87,10 @@ row select_action(vector<vector<int>> maze, vector<vector<q>> Q_table, row pos){
     //  ・agent_action -> ε-greedyを用いて決まった行動
     //
     
+    //通過済み
+    maze[pos.y][pos.x] = 1;
+    
+    //best = select_best_action();
     row best = select_best_action(maze,Q_table,pos);
     row agent_action = best;
     
@@ -99,10 +101,17 @@ row select_action(vector<vector<int>> maze, vector<vector<q>> Q_table, row pos){
     int flag_right = 0;
     
     //いけるところのflagを立てる（0 or 1 or 3でflag = 1に）
-    if(maze[pos.y][pos.x + 1] == 0 || maze[pos.y][pos.x + 1] == 1 || maze[pos.y][pos.x + 1] == 3) flag_right = 1;
-    if(maze[pos.y + 1][pos.x] == 0 || maze[pos.y + 1][pos.x] == 1 || maze[pos.y][pos.x] == 3) flag_down = 1;
-    if(maze[pos.y - 1][pos.x] == 0 || maze[pos.y - 1][pos.x] == 1 || maze[pos.y][pos.x + 1] == 3) flag_up = 1;
-    if(maze[pos.y][pos.x - 1] == 0 || maze[pos.y][pos.x - 1] == 1 || maze[pos.y][pos.x + 1] == 3) flag_left = 1;
+    if(maze[pos.y][pos.x + 1] == 0 || maze[pos.y][pos.x + 1] == 3) flag_right = 1;
+    if(maze[pos.y + 1][pos.x] == 0 || maze[pos.y][pos.x] == 3) flag_down = 1;
+    if(maze[pos.y - 1][pos.x] == 0 || maze[pos.y][pos.x + 1] == 3) flag_up = 1;
+    if(maze[pos.y][pos.x - 1] == 0 || maze[pos.y][pos.x + 1] == 3) flag_left = 1;
+    
+    if(flag_up + flag_down + flag_left + flag_right == 0){
+        if(maze[pos.y][pos.x + 1] == 1 ) flag_right = 1;
+        if(maze[pos.y + 1][pos.x] == 1 ) flag_down = 1;
+        if(maze[pos.y - 1][pos.x] == 1 ) flag_up = 1;
+        if(maze[pos.y][pos.x - 1] == 1 ) flag_left = 1;
+    }
     
     //* : normal action or ! : irregular action を選択
     std::random_device seed_gen;
@@ -176,7 +185,7 @@ void Q_Learning_Platform(int epsode , vector<vector<int>> board , int size){
         
         //1epsode ゴールするまで or MAX_STEP
         while(step <= STEP_MAX){
-            cout << step <<endl;
+            //cout << step <<endl;
             //agentがゴールにいたらepsode終了
             if(board[agent.x][agent.y] == 3){
                 cout << "" << endl;
