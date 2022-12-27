@@ -67,6 +67,15 @@ void print(vector<vector<int>> a){
         cout << endl;
     }
 }
+
+void Q_print(vector<vector<q>> a){
+    for(int i = 0 ; i < a.size() ; i++){
+        for(int j = 0 ; j < a.at(0).size() ; j++){
+            cout << a[i][j].u + a[i][j].r + a[i][j].l + a[i][j].d << "," ;
+        }
+        cout << endl;
+    }
+}
 //幅優先
 
 queue<row> que;

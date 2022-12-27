@@ -30,13 +30,14 @@ row select_best_action(vector<vector<int>> maze, vector<vector<q>> Q_table, row 
     int flag_left = 0;
     int flag_right = 0;
     
-    //いけるところのflagを立てる（0 or 1 or 3でflag = 1に）
-    if(maze[pos.y][pos.x + 1] == 0 || maze[pos.y][pos.x + 1] == 3) flag_right = 1;
-    if(maze[pos.y + 1][pos.x] == 0 || maze[pos.y][pos.x] == 3) flag_down = 1;
-    if(maze[pos.y - 1][pos.x] == 0 || maze[pos.y][pos.x + 1] == 3) flag_up = 1;
-    if(maze[pos.y][pos.x - 1] == 0 || maze[pos.y][pos.x + 1] == 3) flag_left = 1;
+    //いけるところのflagを立てる（0 or 2 or 3でflag = 1に）
+    if(maze[pos.y][pos.x + 1] == 0 || maze[pos.y][pos.x + 1] == 2 || maze[pos.y][pos.x + 1] == 3) flag_right = 1;
+    if(maze[pos.y + 1][pos.x] == 0 || maze[pos.y][pos.x + 1] == 2 || maze[pos.y][pos.x] == 3) flag_down = 1;
+    if(maze[pos.y - 1][pos.x] == 0 || maze[pos.y][pos.x + 1] == 2 || maze[pos.y][pos.x + 1] == 3) flag_up = 1;
+    if(maze[pos.y][pos.x - 1] == 0 || maze[pos.y][pos.x + 1] == 2 || maze[pos.y][pos.x + 1] == 3) flag_left = 1;
     
     if(flag_up + flag_down + flag_left + flag_right == 0){
+        cout << "妥協" << endl;
         if(maze[pos.y][pos.x + 1] == 1 ) flag_right = 1;
         if(maze[pos.y + 1][pos.x] == 1 ) flag_down = 1;
         if(maze[pos.y - 1][pos.x] == 1 ) flag_up = 1;
@@ -120,23 +121,18 @@ row select_action(vector<vector<int>> maze, vector<vector<q>> Q_table, row pos){
     double epsilon = EPSILON;
     if(seed <= epsilon * 10){
         agent_action = best;
+        
         cout << "* : normal action : x." <<  agent_action.x << ", y." << agent_action.y << endl;
     }else{
         //int other_action_pattern = flag_up + flag_down + flag_left + flag_right;
         int math_flag = seed_gen() % 4;
-        if(math_flag == 0 && flag_right == 1){
-            agent_action = {pos.x + 1 , pos.y};
-        }else if(math_flag == 1 && flag_left == 1 ){
-            agent_action = {pos.x - 1 , pos.y};
-        }else if(math_flag == 2 && flag_down == 1){
-            agent_action = {pos.x , pos.y + 1};
-        }else if(math_flag == 3 && flag_up == 1){
-            cout << "this" << endl;
-            agent_action = {pos.x , pos.y - 1};
-        }else{
-            agent_action = best;
-        }
-        cout << "! : irregular action " << math_flag << " : x." <<  agent_action.x << ", y." << agent_action.y << endl;
+        if(math_flag == 0 && flag_right == 1){ agent_action = {pos.x + 1 , pos.y}; }
+        else if(math_flag == 1 && flag_left == 1 ){ agent_action = {pos.x - 1 , pos.y}; }
+        else if(math_flag == 2 && flag_down == 1){ agent_action = {pos.x , pos.y + 1}; }
+        else if(math_flag == 3 && flag_up == 1){ agent_action = {pos.x , pos.y - 1}; }
+        else{ agent_action = best; }
+        
+        cout << "! : irregular action [" << math_flag << "] : x." <<  agent_action.x << ", y." << agent_action.y << endl;
     }
     
     //
@@ -155,7 +151,7 @@ row select_action(vector<vector<int>> maze, vector<vector<q>> Q_table, row pos){
     int gol = int(maze[0].size());
     row goal = {gol,gol};
     
-    //行動に対する報酬を使って更新
+    //行動に対する報酬を計算
     if(agent_action.x == goal.x && agent_action.y == goal.y){ step_value = 100; } //goal
     else { step_value = 10;} //not goal
 
@@ -171,7 +167,6 @@ row select_action(vector<vector<int>> maze, vector<vector<q>> Q_table, row pos){
 
 //epsodeを実行する
 void Q_Learning_Platform(int epsode , vector<vector<int>> board , int size){
-  
     //Qtable
     vector<vector<q>> Q_table(size , vector<q>(size , {0,0,0,0}));
     
@@ -180,30 +175,36 @@ void Q_Learning_Platform(int epsode , vector<vector<int>> board , int size){
     row agent = {1,1}; //egent pos
     vector<vector<int>> maze = board;
     int step = 0; //step
-    
-    for(int i = 0; i < epsode ; i++){
-        
-        //1epsode ゴールするまで or MAX_STEP
-        while(step <= STEP_MAX){
-            //cout << step <<endl;
-            //agentがゴールにいたらepsode終了
-            if(board[agent.x][agent.y] == 3){
-                cout << "" << endl;
-                goal_ = 1;
-                break;
+        for(int i = 0; i < epsode ; i++){
+            
+            //1epsode ゴールするまで or MAX_STEP
+            while(step <= STEP_MAX){
+                cout << endl << step <<endl;
+                print(maze);
+                
+                    //agentがゴールにいたらepsode終了
+                    if(board[agent.x][agent.y] == 3){
+                        cout << "goal" << endl;
+                        goal_ = 1;
+                        break;
+                    }
+                
+                //移動＆table更新
+                agent = select_action(maze, Q_table, agent);
+                maze[agent.y][agent.x] = 1;
+                step++;
             }
             
-            //移動＆table更新
-            agent = select_action(maze, Q_table, agent);
-            step++;
+            //1epsodeが終わったので盤面とエージェントの情報を初期化
+            cout << "goal? :" << goal_ << " | epsode : " << i+1 << endl;
+            agent = {1,1};
+            maze = board;
+            step = 0;
         }
-        //epsodeが終わったので盤面とエージェントの情報を初期化
-        cout << "goal? :" << goal_ << " | epsode : " << i+1 << endl;
-        agent = {1,1};
-        maze = board;
-        step = 0;
-    }
+    
+    //Finish Function
     cout << "Finish : Result >> q_table.csv" << endl;
+    Q_print(Q_table);
 }
 
 //実行用 main()
@@ -233,9 +234,10 @@ int main(){
                                  {9,9,0,0,0,0,9,0,0,0,0,0,0,3,9},
                                  {9,9,9,9,9,9,9,9,9,9,9,9,9,9,9}};
     
-    int maze_size = 101;
+    int maze_size = 15;
     //grid = random_question(maze_size);
     print(grid);
+    
     
     ofstream ofs("test.csv");
     for(int i = 0 ; i < grid.size(); i++){

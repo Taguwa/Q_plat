@@ -5,6 +5,52 @@
 	<key>logFormatVersion</key>
 	<integer>10</integer>
 	<key>logs</key>
-	<dict/>
+	<dict>
+		<key>AB37700A-D82B-45FD-B146-91E56BAFA064</key>
+		<dict>
+			<key>auxiliaryLogUniqueIdentifier</key>
+			<string>A8EC33AE-CFE9-411A-AA26-58F89E7885A8</string>
+			<key>auxiliaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>S</string>
+			</dict>
+			<key>className</key>
+			<string>IDESchemeActionsInvocationRecord</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>com.apple.dt.IDE.LaunchSchemeAction</string>
+			<key>fileName</key>
+			<string>Run-Q_plat-2022.12.20_14-04-50-+0900.xcresult</string>
+			<key>hasAuxiliaryLog</key>
+			<true/>
+			<key>hasConsoleLog</key>
+			<true/>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>S</string>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>Q_plat project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>Q_plat</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Run Q_plat</string>
+			<key>timeStartedRecording</key>
+			<real>693205490.11891997</real>
+			<key>timeStoppedRecording</key>
+			<real>0.0</real>
+			<key>title</key>
+			<string>Run Q_plat</string>
+			<key>uniqueIdentifier</key>
+			<string>AB37700A-D82B-45FD-B146-91E56BAFA064</string>
+		</dict>
+	</dict>
 </dict>
 </plist>
